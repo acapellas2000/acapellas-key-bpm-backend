@@ -2,10 +2,22 @@ from flask import Flask, request, jsonify
 import os
 import uuid
 import librosa
+import sys
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, origins=["*"])  # Pozwala na wszystkie origins - w produkcji ustaw konkretny URL
+
+# CORS - pozwala na zapytania z różnych domen
+CORS(app, 
+     origins=["*"],
+     methods=['GET', 'POST', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization']
+)
+
+# Dodaj informacje o środowisku
+print(f"Python version: {sys.version}")
+print(f"Working directory: {os.getcwd()}")
+print("Starting Flask application...")
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -122,7 +134,28 @@ def analyze():
 
 @app.route("/", methods=["GET"])
 def health_check():
-    return jsonify({"status": "Backend is running", "message": "Key & BPM Analyzer API"})
+    return jsonify({
+        "status": "Backend is running", 
+        "message": "Key & BPM Analyzer API",
+        "version": "1.0",
+        "python_version": sys.version
+    })
+
+@app.route("/test", methods=["GET"])
+def test_librosa():
+    """Test endpoint do sprawdzenia czy librosa działa"""
+    try:
+        import librosa
+        return jsonify({
+            "status": "success",
+            "librosa_version": librosa.__version__,
+            "message": "Librosa is working correctly"
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e)
+        }), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
