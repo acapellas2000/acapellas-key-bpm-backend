@@ -3,11 +3,13 @@ services:
     name: acapellas-key-bpm-backend
     env: python
     plan: free
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1 --worker-class sync
+    buildCommand: |
+      python -m pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1 --worker-class sync --preload
     envVars:
       - key: PORT
         value: 10000
       - key: PYTHON_VERSION
-        value: 3.11.5
+        value: 3.11.9
     healthCheckPath: /
